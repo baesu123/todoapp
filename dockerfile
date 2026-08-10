@@ -1,11 +1,24 @@
-# 1. OpenJDK 21 베이스 이미지 사용
-FROM eclipse-temurin:21-jdk
+# ---------------------------
+# 1. Build
+# ---------------------------
+FROM eclipse-temurin:21-jdk AS build
 
-# 2. 작업 디렉토리 설정
 WORKDIR /app
 
-# 3. Gradle 또는 Maven 빌드 결과물(JAR) 복사
-COPY build/libs/todoapp-0.0.1-SNAPSHOT.jar app.jar
+COPY . .
 
-# 4. 애플리케이션 실행 명령어
+RUN chmod +x gradlew
+
+RUN ./gradlew clean bootJar -x test
+
+
+# ---------------------------
+# 2. Run
+# ---------------------------
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+
+COPY --from=build /app/build/libs/*.jar app.jar
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
