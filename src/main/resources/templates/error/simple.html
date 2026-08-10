@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>오류 - Todo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container narrow">
+    <h2>⚠️ 처리할 수 없는 요청입니다</h2>
+    <p class="alert error" th:text="${errorMessage}"></p>
+    <a th:href="@{/todos}" class="btn primary">할일 목록으로 돌아가기</a>
+</div>
+</body>
+</html>

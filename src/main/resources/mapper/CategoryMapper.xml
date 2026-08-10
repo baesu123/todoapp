@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.todoapp.mapper.CategoryMapper">
+
+    <resultMap id="categoryResultMap" type="com.example.todoapp.domain.Category">
+        <id property="id" column="id"/>
+        <result property="memberId" column="member_id"/>
+        <result property="name" column="name"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 공용 카테고리(member_id IS NULL) + 내가 만든 카테고리 -->
+    <select id="findAllForMember" parameterType="long" resultMap="categoryResultMap">
+        SELECT id, member_id, name, created_at
+        FROM category
+        WHERE member_id IS NULL
+           OR member_id = #{memberId}
+        ORDER BY member_id IS NULL DESC, id ASC
+    </select>
+
+    <select id="findById" parameterType="long" resultMap="categoryResultMap">
+        SELECT id, member_id, name, created_at
+        FROM category
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.example.todoapp.domain.Category" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO category (member_id, name)
+        VALUES (#{memberId}, #{name})
+    </insert>
+
+    <delete id="deleteByIdAndMemberId">
+        DELETE FROM category
+        WHERE id = #{id}
+          AND member_id = #{memberId}
+    </delete>
+
+</mapper>

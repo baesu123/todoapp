@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>할일 목록 - Todo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container">
+    <div class="page-header">
+        <h2>할일 목록</h2>
+        <a th:href="@{/todos/new}" class="btn primary">+ 새 할일</a>
+    </div>
+
+    <form th:action="@{/todos}" method="get" class="filter-bar">
+        <select name="categoryId" onchange="this.form.submit()">
+            <option value="">전체 카테고리</option>
+            <option th:each="c : ${categories}"
+                    th:value="${c.id}"
+                    th:text="${c.name}"
+                    th:selected="${c.id == selectedCategoryId}"></option>
+        </select>
+
+        <select name="completed" onchange="this.form.submit()">
+            <option value="">전체 상태</option>
+            <option value="false" th:selected="${selectedCompleted != null and !selectedCompleted}">진행중</option>
+            <option value="true" th:selected="${selectedCompleted != null and selectedCompleted}">완료</option>
+        </select>
+    </form>
+
+    <p class="empty-state" th:if="${#lists.isEmpty(todos)}">등록된 할일이 없습니다. 새 할일을 추가해보세요!</p>
+
+    <table class="todo-table" th:unless="${#lists.isEmpty(todos)}">
+        <thead>
+        <tr>
+            <th>완료</th>
+            <th>제목</th>
+            <th>카테고리</th>
+            <th>마감일</th>
+            <th>관리</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="todo : ${todos}" th:classappend="${todo.completed} ? 'completed-row' : ''">
+            <td>
+                <form th:action="@{/todos/{id}/toggle(id=${todo.id})}" method="post" class="inline-form">
+                    <button type="submit" class="checkbox-btn" th:text="${todo.completed} ? '✅' : '⬜'"></button>
+                </form>
+            </td>
+            <td th:text="${todo.title}">제목</td>
+            <td>
+                <span class="badge" th:if="${todo.category != null}" th:text="${todo.category.name}">카테고리</span>
+                <span class="badge muted" th:if="${todo.category == null}">미분류</span>
+            </td>
+            <td th:text="${todo.dueDate != null ? todo.dueDate : '-'}">마감일</td>
+            <td class="actions">
+                <a th:href="@{/todos/{id}/edit(id=${todo.id})}" class="btn small">수정</a>
+                <form th:action="@{/todos/{id}/delete(id=${todo.id})}" method="post" class="inline-form"
+                      onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                    <button type="submit" class="btn small danger">삭제</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

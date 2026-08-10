@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.todoapp.mapper.TodoMapper">
+
+    <!--
+        todo 테이블 컬럼 + category 테이블을 LEFT JOIN 해서 얻은 category_name을
+        association으로 묶어 Todo.category(Category 객체)에 채워 넣는다.
+        => "조인 결과를 객체 그래프로 매핑" 하는 MyBatis의 대표적인 패턴 연습용
+    -->
+    <resultMap id="todoResultMap" type="com.example.todoapp.domain.Todo">
+        <id property="id" column="id"/>
+        <result property="memberId" column="member_id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="dueDate" column="due_date"/>
+        <result property="completed" column="completed"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+
+        <association property="category" javaType="com.example.todoapp.domain.Category">
+            <id property="id" column="category_id"/>
+            <result property="name" column="category_name"/>
+        </association>
+    </resultMap>
+
+    <select id="findAllByMember" resultMap="todoResultMap">
+        SELECT
+            t.id, t.member_id, t.category_id, t.title, t.content,
+            t.due_date, t.completed, t.created_at, t.updated_at,
+            c.name AS category_name
+        FROM todo t
+        LEFT JOIN category c ON t.category_id = c.id
+        WHERE t.member_id = #{memberId}
+        <if test="categoryId != null">
+            AND t.category_id = #{categoryId}
+        </if>
+        <if test="completed != null">
+            AND t.completed = #{completed}
+        </if>
+        ORDER BY t.completed ASC, (t.due_date IS NULL) ASC, t.due_date ASC, t.id DESC
+    </select>
+
+    <select id="findByIdAndMemberId" resultMap="todoResultMap">
+        SELECT
+            t.id, t.member_id, t.category_id, t.title, t.content,
+            t.due_date, t.completed, t.created_at, t.updated_at,
+            c.name AS category_name
+        FROM todo t
+        LEFT JOIN category c ON t.category_id = c.id
+        WHERE t.id = #{id}
+          AND t.member_id = #{memberId}
+    </select>
+
+    <insert id="insert" parameterType="com.example.todoapp.domain.Todo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO todo (member_id, category_id, title, content, due_date, completed)
+        VALUES (#{memberId}, #{categoryId}, #{title}, #{content}, #{dueDate}, #{completed})
+    </insert>
+
+    <update id="update" parameterType="com.example.todoapp.domain.Todo">
+        UPDATE todo
+        SET category_id = #{categoryId},
+            title        = #{title},
+            content      = #{content},
+            due_date     = #{dueDate},
+            completed    = #{completed},
+            updated_at   = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+          AND member_id = #{memberId}
+    </update>
+
+    <delete id="deleteByIdAndMemberId">
+        DELETE FROM todo
+        WHERE id = #{id}
+          AND member_id = #{memberId}
+    </delete>
+
+    <update id="toggleCompleted">
+        UPDATE todo
+        SET completed  = NOT completed,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+          AND member_id = #{memberId}
+    </update>
+
+</mapper>
